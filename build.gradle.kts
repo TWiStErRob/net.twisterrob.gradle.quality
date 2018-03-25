@@ -28,12 +28,13 @@ val VERSION_KOTLIN: String by project
 val VERSION_KOTLIN_DSL: String by project
 
 group = rootProject.name
+version = VERSION
 description = "Quality plugin for Gradle that supports Android flavors."
 //version = not set here, because the root project has no an artifact
 
 subprojects {
 	group = rootProject.group
-	version = VERSION
+	version = rootProject.version
 
 	apply { plugin("kotlin") }
 

@@ -1,6 +1,7 @@
 plugins {
 //	kotlin("jvm")
 	`java-gradle-plugin`
+	id("com.gradle.plugin-publish") version "0.9.10"
 }
 
 base.archivesBaseName = "twister-quality"
@@ -33,3 +34,23 @@ dependencies {
 }
 
 listOf( ":test", ":checkstyle", ":pmd" ).forEach(project::pullTestResourcesFrom)
+
+pluginBundle {
+	website = "https://github.com/TWiStErRob/net.twisterrob.gradle"
+	vcsUrl = "https://github.com/TWiStErRob/net.twisterrob.gradle"
+
+	description = "Quality plugin for Gradle that supports Android flavors."
+	tags = listOf("quality", "android", "multiproject", "android-flavors", "java", "checkstyle", "pmd")
+
+	(plugins) {
+		"quality" {
+			id = "net.twisterrob.quality"
+			displayName = "Quality tasks generator for Android Gradle projects"
+		}
+	}
+
+	mavenCoordinates {
+		groupId = rootProject.group as String
+		artifactId = base.archivesBaseName
+	}
+}
