@@ -4,6 +4,7 @@ import com.android.build.gradle.api.BaseVariant
 import com.android.build.gradle.api.SourceKind
 import com.android.builder.model.AndroidProject.FD_GENERATED
 import org.gradle.api.Action
+import org.gradle.api.DefaultTask
 import org.gradle.api.DomainObjectSet
 import org.gradle.api.Project
 import org.gradle.api.Task
@@ -24,10 +25,9 @@ open class VariantTaskCreator<T>(
 		private val taskClass: Class<T>,
 		private val extensionClass: Class<out BaseQualityExtension<T>>
 ) where
-T : SourceTask,
+T : DefaultTask,
 T : Reporting<out ReportContainer<out ConfigurableReport>>,
-T : TargetChecker,
-T : VerificationTask {
+T : TargetChecker {
 
 	private lateinit var eachTask: Task
 
@@ -80,7 +80,9 @@ T : VerificationTask {
 			configurator.setupReports(task)
 			val quality = project.extensions.getByName("quality") as ExtensionAware
 			val checkerExtension = quality.extensions.getByType(extensionClass)
-			checkerExtension.taskConfigurator.execute(TaskConfigurator(task))
+			if (task is SourceTask) {
+				checkerExtension.taskConfigurator.execute(TaskConfigurator(task))
+			}
 		}
 	}
 
@@ -97,7 +99,9 @@ T : VerificationTask {
 			configurator.setupReports(task, variant.name)
 			val quality = project.extensions.getByName("quality") as ExtensionAware
 			val checkerExtension = quality.extensions.getByType(extensionClass)
-			checkerExtension.taskConfigurator.execute(TaskConfigurator(task))
+			if (task is SourceTask) {
+				checkerExtension.taskConfigurator.execute(TaskConfigurator(task))
+			}
 		}
 	}
 
@@ -115,6 +119,9 @@ T : VerificationTask {
 		 * @see <a href="https://github.com/gradle/gradle/issues/3994">gradle/gradle#3994</a>
 		 */
 		open fun setupSources(task: T, variants: Collection<BaseVariant>) {
+			if (task !is SourceTask) {
+				throw IllegalArgumentException("setupSources should be overridden")
+			}
 			// TODO classpath
 			val buildPath = task.project.buildDir.toPath()
 			val projectPath = task.project.projectDir.toPath()
@@ -151,8 +158,10 @@ T : VerificationTask {
 
 		open fun setupReports(task: T, suffix: String? = null) {
 			val fullSuffix = if (suffix != null) "-" + suffix else ""
-			// stop the build only if user wanted this task, otherwise we'll gather the results at once for reporting
-			task.ignoreFailures = !task.wasExplicitlyLaunched
+			if (task is VerificationTask) {
+				// stop the build only if user wanted this task, otherwise we'll gather the results at once for reporting
+				task.ignoreFailures = !task.wasExplicitlyLaunched
+			}
 			// TODO too soon?
 			val reporting = task.project.extensions.findByType(ReportingExtension::class.java)
 			val reportsDir = reporting!!.baseDir

@@ -3,12 +3,11 @@ package net.twisterrob.gradle.common
 import org.gradle.api.Action
 import org.gradle.api.Project
 import org.gradle.api.plugins.ExtensionAware
-import org.gradle.api.tasks.SourceTask
 
 open class BaseQualityPlugin(
 		private val taskCreatorType: Class<out VariantTaskCreator<*>>,
 		private val extensionName: String,
-		private val extensionType: Class<out BaseQualityExtension<out SourceTask>>
+		private val extensionType: Class<out BaseQualityExtension<*>>
 ) : BaseExposedPlugin() {
 
 	override fun apply(target: Project) {
